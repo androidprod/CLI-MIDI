@@ -31,8 +31,8 @@ struct ActiveNote {
 // ─────────────────────────────────────────────
 class PianoRoll {
 public:
-    static constexpr int NOTE_LOW  = 36;
-    static constexpr int NOTE_HIGH = 96;
+    static constexpr int NOTE_LOW  = 0;      // C-1
+    static constexpr int NOTE_HIGH = 128;    // G9（MIDI全キー）
 
     void set_active(const std::vector<ActiveNote>& notes) { 
         active_ = notes; 
@@ -58,7 +58,8 @@ public:
         std::string out;
         
         int draw_lines = static_cast<int>(future_rows.size());
-        int padding_len = (term_cols - 48) / 2;
+        int note_range = NOTE_HIGH - NOTE_LOW;
+        int padding_len = (term_cols - note_range) / 2;
         if (padding_len < 0) padding_len = 0;
         std::string pad(padding_len, ' ');
         
@@ -67,7 +68,7 @@ public:
             const auto& row_notes = future_rows[i];
             bool is_current = (i == 0); // ヒット判定ライン
             
-            for (int n = 48; n < 96; ++n) {
+            for (int n = NOTE_LOW; n < NOTE_HIGH; ++n) {
                 int color = -1;
                 for (const auto& an : row_notes) {
                     if (an.note == n) {
@@ -94,10 +95,17 @@ public:
             out += "\033[K\n";
         }
         
-        // 最後に一番下に鍵盤の C3... ガイドを描画
+        // 最後に一番下に全ノートのガイドを描画（ノート幅に合わせて）
         out += pad;
-        out += "\033[38;5;240mC3            C4            C5"
-               "            C6              \033[0m\033[K\n";
+        out += "\033[38;5;240m";
+        int displayed_width = 0;
+        for (int n = NOTE_LOW; n < NOTE_HIGH; ++n) {
+            std::string note_str = note_name(n) + " ";
+            if (displayed_width + static_cast<int>(note_str.length()) > note_range) break;
+            out += note_str;
+            displayed_width += static_cast<int>(note_str.length());
+        }
+        out += "\033[0m\033[K\n";
                
         return out;
     }
