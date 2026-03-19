@@ -107,3 +107,4 @@ jobs:
             release_assets/CLI-MIDI.exe
             release_assets/CLI-MIDI_amd64
             release_assets/CLI-MIDI_arm64
+
